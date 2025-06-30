@@ -1,5 +1,6 @@
--- Problem 1: Update the price of all books published before 2020 to increase by 10%.
+SET SERVEROUTPUT ON;
 
+-- Problem 1: Update the price of all books published before 2020 to increase by 10%.
 DECLARE
     v_increase_percentage CONSTANT NUMBER := 0.1;
     v_author_name VARCHAR2(100);
@@ -25,10 +26,9 @@ BEGIN
     END LOOP;
 END;
 /
- 
- 
--- Problem 2: Calculate the total number of books in each genre.
 
+
+-- Problem 2: Calculate the total number of books in each genre.
 DECLARE
     CURSOR genre_cursor IS
         SELECT DISTINCT genre FROM books;
@@ -43,9 +43,8 @@ BEGIN
 END;
 /
 
-?
--- Problem 3: Delete customers who haven't placed any orders.
 
+-- Problem 3: Delete customers who haven't placed any orders.
 DECLARE
     TYPE customer_id_list IS TABLE OF customers.customer_id%TYPE;
     v_customer_ids customer_id_list := customer_id_list();
@@ -61,10 +60,9 @@ BEGIN
         AND customer_id NOT IN (SELECT DISTINCT customer FROM orders);
 END;
 /
- 
- 
--- Problem 4: Insert a new author and handle exceptions.
 
+
+-- Problem 4: Insert a new author and handle exceptions.
 DECLARE
     v_author_name authors.author_name%TYPE := 'New Author';
     v_nationality authors.nationality%TYPE := 'Unknown';
@@ -78,10 +76,9 @@ EXCEPTION
         DBMS_OUTPUT.PUT_LINE('Error inserting new author: ' || SQLERRM);
 END;
 /
- 
-?
--- Problem 5: Calculate the average price of books in each genre using a cursor.
 
+
+-- Problem 5: Calculate the average price of books in each genre using a cursor.
 DECLARE
     CURSOR genre_cursor IS
         SELECT DISTINCT genre FROM books;
@@ -99,9 +96,8 @@ BEGIN
 END;
 /
 
-?
--- Problem 6: Develop a function to get the total number of books written by an author.
 
+-- Problem 6: Develop a function to get the total number of books written by an author.
 CREATE OR REPLACE FUNCTION get_total_books_by_author(author_id IN NUMBER)
 RETURN NUMBER
 IS
@@ -115,9 +111,8 @@ EXCEPTION
 END;
 /
 
-?
--- Problem 7: Create a procedure to delete a customer along with their orders and order items.
 
+-- Problem 7: Create a procedure to delete a customer along with their orders and order items.
 CREATE OR REPLACE PROCEDURE delete_customer_with_orders(customer_id IN NUMBER)
 IS
 BEGIN
@@ -131,9 +126,8 @@ EXCEPTION
 END;
 /
 
-?
--- Problem 8: Implement a package with a function to calculate total revenue and a procedure to update stock quantity.
 
+-- Problem 8: Implement a package with a function to calculate total revenue and a procedure to update stock quantity.
 CREATE OR REPLACE PACKAGE bookstore_mgmt AS
     FUNCTION calculate_total_revenue RETURN NUMBER;
     PROCEDURE update_stock_quantity(book_id IN NUMBER, new_quantity IN NUMBER);
@@ -161,9 +155,8 @@ CREATE OR REPLACE PACKAGE BODY bookstore_mgmt AS
 END bookstore_mgmt;
 /
 
-?
--- Problem 9: Implement a function to calculate the average stock quantity of books.
 
+-- Problem 9: Implement a function to calculate the average stock quantity of books.
 CREATE OR REPLACE FUNCTION calculate_avg_stock_quantity RETURN NUMBER IS
     v_avg_stock_quantity NUMBER;
 BEGIN
@@ -175,9 +168,8 @@ EXCEPTION
 END;
 /
 
-?
--- Problem 10: Write a trigger at row level that prevents the deletion of authors if they have any associated books.
 
+-- Problem 10: Write a trigger at row level that prevents the deletion of authors if they have any associated books.
 CREATE OR REPLACE TRIGGER prevent_author_deletion
 BEFORE DELETE ON authors
 FOR EACH ROW
@@ -185,6 +177,7 @@ DECLARE
     v_book_count NUMBER;
     v_author VARCHAR2(20);
 BEGIN
+    v_author := :OLD.author_id;
     SELECT COUNT(*) INTO v_book_count FROM books WHERE author = v_author;
     IF v_book_count > 0 THEN
         RAISE_APPLICATION_ERROR(-20001, 'Cannot delete author with associated books.');
@@ -192,25 +185,19 @@ BEGIN
 END;
 /
 
-?
--- Problem 11: Implement a trigger at statement level that logs the details of deleted books.
 
+-- Problem 11: Implement a trigger at statement level that logs the details of deleted books.
 CREATE OR REPLACE TRIGGER log_deleted_books
 AFTER DELETE ON books
 FOR EACH ROW
-DECLARE
-    v_deleted_date DATE;
 BEGIN
-    v_deleted_date := SYSDATE;
-    
-    INSERT INTO deleted_books_log (book_id, title, deleted_date) 
-    VALUES (:OLD.book_id, :OLD.title, v_deleted_date);
+    INSERT INTO deleted_books_log (book_id, title, deleted_date)
+    VALUES (:OLD.book_id, :OLD.title, SYSDATE);
 END;
 /
 
-?
--- Problem 12: Create a varray to store the names of authors with more than 5 books. Write a function to populate this varray and return it.
 
+-- Problem 12: Create a varray to store the names of authors with more than 5 books. Write a function to populate this varray and return it.
 CREATE OR REPLACE FUNCTION get_authors_with_many_books RETURN author_name_varray
 IS
     v_authors author_name_varray := author_name_varray();
@@ -230,9 +217,8 @@ BEGIN
 END;
 /
 
-?
--- Problem 13: Create a procedure to handle division by zero errors when calculating the average stock quantity of books.
 
+-- Problem 13: Create a procedure to handle division by zero errors when calculating the average stock quantity of books.
 CREATE OR REPLACE PROCEDURE calculate_avg_stock_quantity_with_error_handling
 IS
     v_avg_stock_quantity NUMBER;
@@ -244,9 +230,8 @@ EXCEPTION
 END;
 /
 
-?
--- Problem 14: Implement an explicit cursor to update the stock quantity of books in a specified genre.
 
+-- Problem 14: Implement an explicit cursor to update the stock quantity of books in a specified genre.
 DECLARE
     CURSOR book_cursor IS
         SELECT * FROM books WHERE genre = 'Fantasy' FOR UPDATE;
@@ -263,9 +248,8 @@ EXCEPTION
 END;
 /
 
-?
--- Problem 15: Implement a loop that iterates over the stock quantity of books and categorizes them as low, medium, or high based on predefined thresholds.
 
+-- Problem 15: Implement a loop that iterates over the stock quantity of books and categorizes them as low, medium, or high based on predefined thresholds.
 DECLARE
     v_stock_threshold_low NUMBER := 10;
     v_stock_threshold_medium NUMBER := 50;
@@ -285,9 +269,8 @@ BEGIN
 END;
 /
 
-?
--- Problem 16: Create a function to calculate the discount percentage based on the total purchase amount and customer type.
 
+-- Problem 16: Create a function to calculate the discount percentage based on the total purchase amount and customer type.
 CREATE OR REPLACE FUNCTION calculate_discount_percentage(
     p_total_purchase_amount IN NUMBER,
     p_customer_type IN VARCHAR2
@@ -310,9 +293,8 @@ BEGIN
 END;
 /
 
-?
--- Problem 17: Create a procedure to update the publication date of a book based on the author's nationality.
 
+-- Problem 17: Create a procedure to update the publication date of a book based on the author's nationality.
 CREATE OR REPLACE PROCEDURE update_publication_date_by_nationality(
     p_nationality IN VARCHAR2,
     p_new_publication_date IN DATE
@@ -328,10 +310,9 @@ EXCEPTION
         DBMS_OUTPUT.PUT_LINE('Error updating publication dates: ' || SQLERRM);
 END;
 /
- 
-?
--- Problem 18: Develop a function to get the total revenue generated by an author based on their books.
 
+
+-- Problem 18: Develop a function to get the total revenue generated by an author based on their books.
 CREATE OR REPLACE FUNCTION get_total_revenue_by_author(author_id IN NUMBER)
 RETURN NUMBER
 IS
@@ -350,9 +331,8 @@ EXCEPTION
 END;
 /
 
-?
---Problem 19: Store and display the number of orders for each customer using an index-by table.
 
+--Problem 19: Store and display the number of orders for each customer using an index-by table.
 DECLARE
     TYPE order_count_type IS TABLE OF NUMBER INDEX BY VARCHAR2(100);
     v_order_count order_count_type;
@@ -370,9 +350,8 @@ BEGIN
 END;
 /
 
-?
--- Problem 20: Implement a row-level trigger to enforce a constraint that prevents the insertion of orders for books with zero stock.
 
+-- Problem 20: Implement a row-level trigger to enforce a constraint that prevents the insertion of orders for books with zero stock.
 CREATE OR REPLACE TRIGGER prevent_zero_stock_orders
 BEFORE INSERT ON orders
 FOR EACH ROW
